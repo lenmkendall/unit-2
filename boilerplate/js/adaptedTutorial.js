@@ -19,7 +19,8 @@ function createMap() {
     getData();
 
 };
-//added function to attach popups to each mapped feature
+
+//function to attach popups to each mapped feature
 function onEachFeature(feature, layer) {
     //no property named popupContent; instead, create html string with all properties
     var popupContent = "";
@@ -33,8 +34,9 @@ function onEachFeature(feature, layer) {
 
 };
 
+
 //function to retreive the data and place it on the map
-function getData(map) {
+function getData() {
     //load the data
     fetch("data/MegaCities.geojson")
         .then(function(response) {
@@ -42,11 +44,31 @@ function getData(map) {
         })
         .then(function(json) {
             //create a Leaflet GeoJSON layer and add it to the map
+            //L.geoJson(json).addTo(map);
+            
+            var geojsonMarkerOptions = {
+                radius: 8,
+                fillColor: "#ff7800",
+                color: "#000",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            }
+
+            onEachFeature(json)
+                //create a Leaflet GeoJSON layer and add it to the map
+                L.geoJson(json, {
+                    onEachFeature : onEachFeature
+                }).addTo(map);
+            
+            //create a Leaflet GeoJSON layer and add it to the map
             L.geoJson(json, {
-                onEachFeature: onEachFeature
+                pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng, geojsonMarkerOptions);
+                }
             }).addTo(map);
-    
-        })
+
+        });
 };
 
 document.addEventListener("DOMContentLoaded", createMap)
