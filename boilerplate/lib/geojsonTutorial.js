@@ -1,5 +1,13 @@
 // Example from GeoJSON Tutorial
 
+var map = L.map('map').setView([39.75621, -104.99404], 4);
+
+//add tile layer
+L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+}).addTo(map);
+
+//creates geojsonFeature variable
 var geojsonFeature = {
     "type": "Feature",
     "properties": {
@@ -12,8 +20,26 @@ var geojsonFeature = {
         "coordinates": [-104.99404, 39.75621]
     }
 };
-
+//adds feature to map
 L.geoJSON(geojsonFeature).addTo(map);
+//creates myLines variable 
+var myLines = [{
+    "type": "LineString",
+    "coordinates": [[-100, 40], [-105, 45], [-110, 55]]
+}, {
+    "type": "LineString",
+    "coordinates": [[-105, 40], [-110, 45], [-115, 55]]
+}];
+//creates style for myLines
+var myStyle = {
+    "color": "#ff7800",
+    "weight": 5,
+    "opacity": 0.65
+};
+//adds myLines with style to map
+L.geoJSON(myLines, {
+    style: myStyle
+}).addTo(map);
 
 var myLines = [{
     "type": "LineString",
@@ -22,28 +48,7 @@ var myLines = [{
     "type": "LineString",
     "coordinates": [[-105, 40], [-110, 45], [-115, 55]]
 }];
-
-var myLayer = L.geoJSON().addTo(map);
-myLayer.addData(geojsonFeature);
-
-var myLines = [{
-    "type": "LineString",
-    "coordinates": [[-100, 40], [-105, 45], [-110, 55]]
-}, {
-    "type": "LineString",
-    "coordinates": [[-105, 40], [-110, 45], [-115, 55]]
-}];
-
-var myStyle = {
-    "color": "#ff7800",
-    "weight": 5,
-    "opacity": 0.65
-};
-
-L.geoJSON(myLines, {
-    style: myStyle
-}).addTo(map);
-
+//adds variable for states 
 var states = [{
     "type": "Feature",
     "properties": {"party": "Republican"},
@@ -71,7 +76,7 @@ var states = [{
         ]]
     }
 }];
-
+//creates style for state color dependent on whether republican or democrat and adds to map
 L.geoJSON(states, {
     style: function(feature) {
         switch (feature.properties.party) {
@@ -80,7 +85,7 @@ L.geoJSON(states, {
         }
     }
 }).addTo(map);
-
+//creates a variable for markers of the style of the states. 
 var geojsonMarkerOptions = {
     radius: 8,
     fillColor: "#ff7800",
@@ -88,21 +93,21 @@ var geojsonMarkerOptions = {
     weight: 1,
     opacity: 1,
     fillOpacity: 0.8
-};
-
-L.geoJSON(someGeojsonFeature, {
-    pointToLayer: function (feature, latlng) {
+}
+//creates a circle where geojsonFeature is located and adds to map
+L.geoJSON(geojsonFeature, {
+    pointToLayer: function (geojsonFeature, latlng) {
         return L.circleMarker(latlng, geojsonMarkerOptions);
     }
 }).addTo(map);
-
-function onEachFeature(feature, layer) {
+//should open popup for each feature that has popupContent property
+function onEachFeature(geojsonFeature, layer) {
     // does this feature have a property named popupContent?
-    if (feature.properties && feature.properties.popupContent) {
-        layer.bindPopup(feature.properties.popupContent);
+    if (geojsonFeature.properties && geojsonFeature.properties.popupContent) {
+        layer.bindPopup(geojsonFeature.properties.popupContent);
     }
 }
-
+//creates variable for geojsonFeature 
 var geojsonFeature = {
     "type": "Feature",
     "properties": {
@@ -115,11 +120,12 @@ var geojsonFeature = {
         "coordinates": [-104.99404, 39.75621]
     }
 };
-
+//adds to map the feature and popupContent
 L.geoJSON(geojsonFeature, {
     onEachFeature: onEachFeature
 }).addTo(map);
 
+//only shows some features if true 
 var someFeatures = [{
     "type": "Feature",
     "properties": {
@@ -142,6 +148,7 @@ var someFeatures = [{
     }
 }];
 
+//only shows some features on the map and adds to the map
 L.geoJSON(someFeatures, {
     filter: function(feature, layer) {
         return feature.properties.show_on_map;
