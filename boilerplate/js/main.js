@@ -7,8 +7,8 @@ var map;
 function createMap() {
     //create the map
     map = L.map('map', {
-        center: [20,0],
-        zoom: 2
+        center: [40,-100],
+        zoom: 4
     });
 
     //add OSM base tilelayer
@@ -29,7 +29,7 @@ function onEachFeature(feature, layer) {
         for (var property in feature.properties) {
             popupContent += "<p>" + property + ": " + feature.properties[property] + "</p>";
         }
-        layer.bindPopup(popupContent);
+        layer.bindPopup(popupContent + "Commute Times in minutes.");
     };
 
 };
@@ -38,7 +38,7 @@ function onEachFeature(feature, layer) {
 //function to retreive the data and place it on the map
 function getData() {
     //load the data
-    fetch("data/MegaCities.geojson")
+    fetch("data/CommuteTime.geojson")
         .then(function(response) {
             return response.json();
         })
