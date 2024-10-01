@@ -7,8 +7,8 @@ L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
 }).addTo(map);
 
-//creates geojsonFeature variable
-var geojsonFeature = {
+//creates geojsonFeature Coors Field variable
+var geojsonFeature1 = {
     "type": "Feature",
     "properties": {
         "name": "Coors Field",
@@ -20,8 +20,8 @@ var geojsonFeature = {
         "coordinates": [-104.99404, 39.75621]
     }
 };
-//adds feature to map
-L.geoJSON(geojsonFeature).addTo(map);
+//adds Coors Field feature to map
+L.geoJSON(geojsonFeature1).addTo(map);
 //creates myLines variable 
 var myLines = [{
     "type": "LineString",
@@ -41,13 +41,7 @@ L.geoJSON(myLines, {
     style: myStyle
 }).addTo(map);
 
-var myLines = [{
-    "type": "LineString",
-    "coordinates": [[-100,40], [-105, 45], [-110, 55]]
-}, {
-    "type": "LineString",
-    "coordinates": [[-105, 40], [-110, 45], [-115, 55]]
-}];
+
 //adds variable for states 
 var states = [{
     "type": "Feature",
@@ -94,21 +88,16 @@ var geojsonMarkerOptions = {
     opacity: 1,
     fillOpacity: 0.8
 }
-//creates a circle where geojsonFeature is located and adds to map
-L.geoJSON(geojsonFeature, {
-    pointToLayer: function (geojsonFeature, latlng) {
-        return L.circleMarker(latlng, geojsonMarkerOptions);
-    }
-}).addTo(map);
+
 //should open popup for each feature that has popupContent property
-function onEachFeature(geojsonFeature, layer) {
+function onEachFeature(feature, layer) {
     // does this feature have a property named popupContent?
-    if (geojsonFeature.properties && geojsonFeature.properties.popupContent) {
-        layer.bindPopup(geojsonFeature.properties.popupContent);
+    if (feature.properties && feature.properties.popupContent) {
+        layer.bindPopup(feature.properties.popupContent);
     }
 }
 //creates variable for geojsonFeature 
-var geojsonFeature = {
+var geojsonFeature2 = {
     "type": "Feature",
     "properties": {
         "name": "Coors Field",
@@ -121,7 +110,7 @@ var geojsonFeature = {
     }
 };
 //adds to map the feature and popupContent
-L.geoJSON(geojsonFeature, {
+L.geoJSON(geojsonFeature2, {
     onEachFeature: onEachFeature
 }).addTo(map);
 

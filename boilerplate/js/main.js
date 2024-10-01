@@ -1,74 +1,114 @@
 // Map of GeoJSON data from MegaCities.geojson
 //declare map var in global scope
+//declare minValue in global scope
 
 var map;
+var minValue;
 
 //function to instantiate the leaflet map
 function createMap() {
+    
     //create the map
     map = L.map('map', {
         center: [40,-100],
         zoom: 4
     });
 
+
     //add OSM base tilelayer
-    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'}).addTo(map);
+    var OpenStreetMap_Mapnik = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, 
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
 
     //call getData function
-    getData();
+    getData(map);
 
-};
-
-//function to attach popups to each mapped feature
-function onEachFeature(feature, layer) {
-    //no property named popupContent; instead, create html string with all properties
-    var popupContent = "";
-    if (feature.properties) {
-        //loop to add feature property names and values to html string
-        for (var property in feature.properties) {
-            popupContent += "<p>" + property + ": " + feature.properties[property] + "</p>";
+}
+//function to calculate the minimum value in the dataset
+function calculateMinValue(json) {
+    //create empty array to store all data values
+    var allValues = [];
+    //loop through each State
+    for(var state of json.features){
+        //loop through each year
+        for(var year = 2013; year <= 2019; year+=1){
+            //get commute time for current year
+            var value = state.properties["commute"+ String(year)];
+            //add value to array
+            allValues.push(value);
         }
-        layer.bindPopup(popupContent + "Commute Times in minutes.");
+    }
+    //get minimum value of our array
+    var minValue = Math.min(...allValues)
+
+    return minValue;
+}
+
+//calculate the radius of each proportional sympbol
+function calcPropRadius(attValue) {
+    //constant factor adjusts symbol sizes evenly
+    var minRadius = 5; 
+    //Flannery Apperance Compensation formula
+    var radius = 1.0083 * Math.pow(attValue/minValue,0.5715) * minRadius
+
+    return radius;
+}
+
+//function to convert markers to circle markers
+function pointToLayer(feature, latlng) {
+    //determine which attribute to visualize with proportional symbols
+    var attribute = "commute2013";
+
+    //create marker options
+    var options = {
+        fillColor: "#ff7800", 
+        color: "#000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
     };
 
-};
+    //for each feature, determine its value for the selected attribute
+    var attValue = Number(feature.properties[attribute]); 
 
+    //give each feature's circle marker radius based on its attribute value
+    options.radius = calcPropRadius(attValue);
 
-//function to retreive the data and place it on the map
-function getData() {
+    //create a circle marker layer
+    var layer = L.circleMarker(latlng, options);
+
+    //build popup content string
+    var popupContent = "<p><b>State:</b> " + feature.properties.state + "</p><p><b>" + attribute + ":</b> " + feature.properties[attribute] + "minutes.</p>";
+
+    //bind the popup to the circle marker
+    layer.bindPopup(popupContent);
+
+    //Return the circle marker to the L.geoJson pointToLayer option
+    return layer; 
+}
+
+//function to add circle markers for point features to the map
+function createPropSymbols(json, map) {
+    //create a Leaflet GeoJSON layer and add it to the map 
+    L.geoJson(json, {
+        pointToLayer: pointToLayer
+    }).addTo(map);
+}
+
+//import GeoJSON data
+function getData(map) {
     //load the data
     fetch("data/CommuteTime.geojson")
         .then(function(response) {
             return response.json();
         })
         .then(function(json) {
-            //create a Leaflet GeoJSON layer and add it to the map
-            //L.geoJson(json).addTo(map);
-            
-            var geojsonMarkerOptions = {
-                radius: 8,
-                fillColor: "#ff7800",
-                color: "#000",
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.8
-            }
-
-            onEachFeature(json)
-                //create a Leaflet GeoJSON layer and add it to the map
-                L.geoJson(json, {
-                    onEachFeature : onEachFeature
-                }).addTo(map);
-            
-            //create a Leaflet GeoJSON layer and add it to the map
-            L.geoJson(json, {
-                pointToLayer: function (feature, latlng) {
-                    return L.circleMarker(latlng, geojsonMarkerOptions);
-                }
-            }).addTo(map);
-
+            //calculate minimum data value
+            minValue = calculateMinValue(json);
+            //call function to create proportional symbols
+            createPropSymbols(json, map); //pass the map here
         });
-};
+}
 
+//add event listener for DOMContentLoaded to create the map
 document.addEventListener("DOMContentLoaded", createMap)
