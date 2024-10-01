@@ -55,9 +55,11 @@ function calcPropRadius(attValue) {
 }
 
 //function to convert markers to circle markers
-function pointToLayer(feature, latlng) {
+function pointToLayer(feature, latlng, attributes) {
     //determine which attribute to visualize with proportional symbols
-    var attribute = "commute2013";
+    var attribute1 = attributes[0];
+    //check
+    console.log(attribute1);
 
     //create marker options
     var options = {
@@ -95,6 +97,47 @@ function createPropSymbols(json, map) {
     }).addTo(map);
 }
 
+//create new sequence controls
+function createSequenceControls() {
+    //create range input element (slider)
+    var slider = "<input class = 'range-slider' type = 'range'></input>";
+    document.querySelector("#panel").insertAdjacentHTML('beforeend', slider);
+
+    //set slider attributes
+    document.querySelector(".range-slider").max = 6;
+    document.querySelector(".range-slider").min = 0;
+    document.querySelector(".range-slider").value = 0;
+    document.querySelector(".range-slider").step = 1;
+
+    //add step buttons
+    document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class ="step" id = "reverse">BACK</button>');
+    document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class = "step" id = "forward">FWD</button>');
+
+};
+
+//build an attributes array from the data
+function processData(json) {
+    //empty array to hold attributes
+    var attributes = [];
+
+    //properties of the first feature in the dataset
+    var properties = json.features[0].properties;
+
+    //push each attribute name into attributes array
+    for (var attribute in properties) {
+        //only take attributes with population values
+        if (attribute.indexOf("commute") > -1) {
+            attributes.push(attribute);
+        };
+    };
+
+    //check result
+    console.log(attributes);
+
+    return attributes;
+};
+
+
 //import GeoJSON data
 function getData(map) {
     //load the data
@@ -103,12 +146,17 @@ function getData(map) {
             return response.json();
         })
         .then(function(json) {
+            //create an attributes array
+            var attributes = processData(json);
+            
             //calculate minimum data value
             minValue = calculateMinValue(json);
             //call function to create proportional symbols
-            createPropSymbols(json, map); //pass the map here
-        });
-}
+            createPropSymbols(json, map, attributes); //pass the map here
+            createSequenceControls(attributes);
+        })
+};
+
 
 //add event listener for DOMContentLoaded to create the map
 document.addEventListener("DOMContentLoaded", createMap)
