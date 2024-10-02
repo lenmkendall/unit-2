@@ -24,6 +24,8 @@ function createMap() {
     getData(map);
 
 }
+
+
 //function to calculate the minimum value in the dataset
 function calculateMinValue(json) {
     //create empty array to store all data values
@@ -57,9 +59,9 @@ function calcPropRadius(attValue) {
 //function to convert markers to circle markers
 function pointToLayer(feature, latlng, attributes) {
     //determine which attribute to visualize with proportional symbols
-    var attribute1 = attributes[0];
+    var attribute = attributes[0];
     //check
-    console.log(attribute1);
+    console.log(attribute);
 
     //create marker options
     var options = {
@@ -90,18 +92,23 @@ function pointToLayer(feature, latlng, attributes) {
 }
 
 //function to add circle markers for point features to the map
-function createPropSymbols(json, map) {
+function createPropSymbols(json, map, attributes) {
     //create a Leaflet GeoJSON layer and add it to the map 
     L.geoJson(json, {
-        pointToLayer: pointToLayer
+        pointToLayer: function (feature, latlng) {
+            return pointToLayer(feature, latlng, attributes);
+        }
     }).addTo(map);
-}
+};
 
 //create new sequence controls
 function createSequenceControls() {
     //create range input element (slider)
     var slider = "<input class = 'range-slider' type = 'range'></input>";
     document.querySelector("#panel").insertAdjacentHTML('beforeend', slider);
+    //pass new attribute to update symbols
+    updatePropSymbols(attributes[index]);
+
 
     //set slider attributes
     document.querySelector(".range-slider").max = 6;
@@ -112,8 +119,43 @@ function createSequenceControls() {
     //add step buttons
     document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class ="step" id = "reverse">BACK</button>');
     document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class = "step" id = "forward">FWD</button>');
+    
+
+    //click listener for buttons
+    document.querySelectorAll('.step').forEach(function(step){
+        step.addEventListener("click", function(){
+            var index = document.querySelector('.range-slider').value;   
+            
+            // increment or decrement depending on button clicked
+            if (step.id == 'forward') {
+                index++;
+                //if past the last attribute, wrap around to first attribute
+                index = index > 6 ? 0 : index;
+            } else if (step.id == 'reverse') {
+                index--;
+                //if past the first attribute wrap around to the last attribute
+                index = index < 0 ? 6 : index;
+            };
+
+            //update slider
+            document.querySelector('.range-slider').value = index;
+            //pass new attribute to update symbols
+            updatePropSymbols(attributes[index]);
+        })
+
+    })
 
 };
+
+//resize proportional symbols according to new attribute values
+function updatePropSymbols(attribute) {
+    map.eachLayer(function(layer) {
+        if (layer.feature && layer.feature.properties[attribute]) {
+            //update the layer style and popup
+        }
+    })
+}
+
 
 //build an attributes array from the data
 function processData(json) {
