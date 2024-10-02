@@ -102,60 +102,71 @@ function createPropSymbols(json, map, attributes) {
 };
 
 //create new sequence controls
-function createSequenceControls() {
+function createSequenceControls(attributes) { //changed to accept the 'attributes' array as a parameter
     //create range input element (slider)
     var slider = "<input class = 'range-slider' type = 'range'></input>";
     document.querySelector("#panel").insertAdjacentHTML('beforeend', slider);
-    //pass new attribute to update symbols
-    updatePropSymbols(attributes[index]);
+    
+    //pass new attribute to update symbols initially
+    updatePropSymbols(attributes[0]); //start with the first attribute
 
-
-    //set slider attributes
-    document.querySelector(".range-slider").max = 6;
+    //set slider attributes dynamically based on number of attributes
+    document.querySelector(".range-slider").max = attributes.length - 1;
     document.querySelector(".range-slider").min = 0;
     document.querySelector(".range-slider").value = 0;
     document.querySelector(".range-slider").step = 1;
 
     //add step buttons
-    document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class ="step" id = "reverse">BACK</button>');
-    document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class = "step" id = "forward">FWD</button>');
+document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class ="step" id = "reverse">BACK</button>');
+document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class = "step" id = "forward">FWD</button>');
     
 
     //click listener for buttons
-    document.querySelectorAll('.step').forEach(function(step){
-        step.addEventListener("click", function(){
+    document.querySelectorAll('.step').forEach(function(step) {
+        step.addEventListener("click", function() {
             var index = document.querySelector('.range-slider').value;   
             
             // increment or decrement depending on button clicked
             if (step.id == 'forward') {
                 index++;
                 //if past the last attribute, wrap around to first attribute
-                index = index > 6 ? 0 : index;
+                index = index > attributes.length - 1 ? 0 : index;
             } else if (step.id == 'reverse') {
                 index--;
                 //if past the first attribute wrap around to the last attribute
-                index = index < 0 ? 6 : index;
-            };
+                index = index < 0 ? attributes.length - 1 : index;
+            }
 
             //update slider
             document.querySelector('.range-slider').value = index;
+
             //pass new attribute to update symbols
             updatePropSymbols(attributes[index]);
-        })
+        });
 
-    })
+    });
 
-};
+}
 
 //resize proportional symbols according to new attribute values
 function updatePropSymbols(attribute) {
     map.eachLayer(function(layer) {
         if (layer.feature && layer.feature.properties[attribute]) {
-            //update the layer style and popup
-        }
-    })
-}
+            
+            var props = layer.feature.properties;
 
+            //update each feature's radius based on the new attribute values
+            var radius = calcPropRadius(props[attribute]);
+            layer.setRadius(radius);
+
+            //update popup content
+            var popupContent = "<p><b>State:</b> " + props.state + "</p><p><b>" + attribute + ":</b> " + props[attribute] + "minutes.</p>";
+
+            layer.bindPopup(popupContent).openPopup();
+        }
+    
+    });
+}
 
 //build an attributes array from the data
 function processData(json) {
@@ -170,14 +181,14 @@ function processData(json) {
         //only take attributes with population values
         if (attribute.indexOf("commute") > -1) {
             attributes.push(attribute);
-        };
-    };
+        }
+    }
 
     //check result
     console.log(attributes);
 
     return attributes;
-};
+}
 
 
 //import GeoJSON data
@@ -194,10 +205,10 @@ function getData(map) {
             //calculate minimum data value
             minValue = calculateMinValue(json);
             //call function to create proportional symbols
-            createPropSymbols(json, map, attributes); //pass the map here
-            createSequenceControls(attributes);
-        })
-};
+            createPropSymbols(json, map, attributes); //pass the map here and pass the attributes to createPropSymbols
+            createSequenceControls(attributes);  //pass attributes to createSequenceControls
+        });
+}
 
 
 //add event listener for DOMContentLoaded to create the map
