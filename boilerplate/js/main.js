@@ -25,6 +25,14 @@ function createMap() {
 
 }
 
+//PopupContent constructor function
+function PopupContent(properties, attribute) {
+    this.properties = properties;
+    this.attribute = attribute;
+    this.year = attribute.split("commute")[1];
+    this.commute = this.properties[attribute];
+    this.formatted = "<p><b>state:</b> " + this.properties.state + "</p><p><b>Commmute in " + this.year + ": </b>" + this.commute + " minutes</p>"; 
+};
 
 //function to calculate the minimum value in the dataset
 function calculateMinValue(json) {
@@ -82,7 +90,10 @@ function pointToLayer(feature, latlng, attributes) {
     var layer = L.circleMarker(latlng, options);
 
     //build popup content string
-    var popupContent = "<p><b>State:</b> " + feature.properties.state + "</p><p><b>" + attribute + ":</b> " + feature.properties[attribute] + "minutes.</p>";
+    var popupContent = new PopupContent(feature.properties, attribute);
+    
+    //bind the popup to the circle marker
+    layer.bindPopup(popupContent.formatted, {  offset: new L.Point(0,-options.radius)    });
 
     //bind the popup to the circle marker
     layer.bindPopup(popupContent);
@@ -160,13 +171,29 @@ function updatePropSymbols(attribute) {
             layer.setRadius(radius);
 
             //update popup content
-            var popupContent = "<p><b>State:</b> " + props.state + "</p><p><b>" + attribute + ":</b> " + props[attribute] + "minutes.</p>";
+            var popupContent = createPopupContent(props, attribute);
+            //update popup with new content
+            popup = layer.getPopup();
+            popup.setContent(popupContent).update();
 
             layer.bindPopup(popupContent).openPopup();
         }
     
     });
 }
+
+//a consolidated popup-content-creation function 
+function createPopupContent(properties, attribute) {
+    //add state to popup content string
+    var popupContent = "<p><b>State:</b> " + properties.state + "</p>";
+
+    //add formatted attribute to panel content string
+    var year = attribute.split("commute")[1];
+    popupContent += "<p><b>Average commute in " + year + ": </b>" + properties[attribute] + " minutes</p>";
+
+    return popupContent;
+};
+
 
 //build an attributes array from the data
 function processData(json) {
