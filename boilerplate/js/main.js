@@ -114,10 +114,40 @@ function createPropSymbols(json, map, attributes) {
 
 //create new sequence controls
 function createSequenceControls(attributes) { //changed to accept the 'attributes' array as a parameter
-    //create range input element (slider)
-    var slider = "<input class = 'range-slider' type = 'range'></input>";
-    document.querySelector("#panel").insertAdjacentHTML('beforeend', slider);
     
+    var SequenceControl = L.Control.extend({
+        options: {
+            position: 'bottomleft'
+        },
+
+        onAdd: function() {
+            
+            //create the control container div with a particular class name
+            var container = L.DomUtil.create('div', 'sequence-control-container');
+
+            //create range input element (slider)
+            container.insertAdjacentHTML('beforeend', '<input class = "range-slider" type = "range">') 
+            
+            //add skip buttons
+            container.insertAdjacentHTML('beforeend', '<button class = "step" id = "reverse" title = Reverse"><img src = "img/reverse.png"></button>');
+            container.insertAdjacentHTML('beforeend', '<button class = "step" id = "forward" title = "Forward"><img src = "img/forward.png"></button>');
+
+            
+            //disable any mouse event listeners for the container
+            L.DomEvent.disableClickPropagation(container);
+
+            //set
+
+            //...initialize other DOM elements
+
+            return container;
+
+        }
+    });
+
+    map.addControl(new SequenceControl()); //add listeners after adding control}
+    
+
     //pass new attribute to update symbols initially
     updatePropSymbols(attributes[0]); //start with the first attribute
 
@@ -125,12 +155,7 @@ function createSequenceControls(attributes) { //changed to accept the 'attribute
     document.querySelector(".range-slider").max = attributes.length - 1;
     document.querySelector(".range-slider").min = 0;
     document.querySelector(".range-slider").value = 0;
-    document.querySelector(".range-slider").step = 1;
-
-    //add step buttons
-document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class ="step" id = "reverse">BACK</button>');
-document.querySelector("#panel").insertAdjacentHTML('beforeend','<button class = "step" id = "forward">FWD</button>');
-    
+    document.querySelector(".range-slider").step = 1;  
 
     //click listener for buttons
     document.querySelectorAll('.step').forEach(function(step) {
@@ -180,7 +205,29 @@ function updatePropSymbols(attribute) {
         }
     
     });
+
+    function createLegend(attributes) {
+        var LegendControl = L.Control.extend( {
+            options: {
+                position: 'bottomright'
+            },
+    
+            onAdd: function () {
+                //create the control container with a particular class name
+                var container = L.DomUtil.create('div', 'legend-control-container');
+    
+                //PUT YOUR SCRIPT TO CREATE THE TEMPORAL LEGEND HERE
+    
+                return container;
+            }
+        });
+    
+        map.addControl(new LegendControl());
+    };
+     
 }
+
+
 
 //a consolidated popup-content-creation function 
 function createPopupContent(properties, attribute) {
