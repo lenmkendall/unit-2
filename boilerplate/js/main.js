@@ -217,7 +217,7 @@ function updatePropSymbols(attribute) {
                 var container = L.DomUtil.create('div', 'legend-control-container');
         
                 //PUT YOUR SCRIPT TO CREATE THE TEMPORAL LEGEND HERE
-                var legendContent = "<p><b>Commute Time:</b> " + attributes + "</p>";
+                
 
                 return container;
             }
