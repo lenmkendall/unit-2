@@ -57,7 +57,7 @@ function calculateMinValue(json) {
 //calculate the radius of each proportional sympbol
 function calcPropRadius(attValue) {
     //constant factor adjusts symbol sizes evenly
-    var minRadius = 5; 
+    var minRadius = 7; 
     //Flannery Apperance Compensation formula
     var radius = 1.0083 * Math.pow(attValue/minValue,0.5715) * minRadius
 
@@ -215,9 +215,10 @@ function updatePropSymbols(attribute) {
             onAdd: function () {
                 //create the control container with a particular class name
                 var container = L.DomUtil.create('div', 'legend-control-container');
-    
+        
                 //PUT YOUR SCRIPT TO CREATE THE TEMPORAL LEGEND HERE
-    
+                var legendContent = "<p><b>Commute Time:</b> " + attributes + "</p>";
+
                 return container;
             }
         });
@@ -226,7 +227,6 @@ function updatePropSymbols(attribute) {
     };
      
 }
-
 
 
 //a consolidated popup-content-creation function 
@@ -259,7 +259,7 @@ function processData(json) {
     }
 
     //check result
-    console.log(attributes);
+    //console.log(attributes);
 
     return attributes;
 }
