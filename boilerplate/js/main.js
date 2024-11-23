@@ -4,6 +4,7 @@
 
 var map;
 var minValue;
+var dataStats = {}; 
 
 //function to instantiate the leaflet map
 function createMap() {
@@ -23,7 +24,30 @@ function createMap() {
     //call getData function
     getData(map);
 
-}
+};
+
+//function to calc min, max, mean values
+function calcStats(data) {
+    //create empty array to store all datavalues
+    var allValues = [];
+
+    //loop through each city
+    for (var state of data.features) {
+        //loop through each year
+        for(var year = 2013; year <= 2019; year +=1) {
+            //get commute time for current year
+            var value = state.properties[String(year)];
+            //add value to array
+            allValues.push(value);
+        }
+    }
+    //get min, max, and mean stats
+    dataStats.min = Math.min(...allValues);
+    dataStats.max = Math.max(...allValues);
+    //calculate mean value
+    var sum = allValues.reduce(function(a, b) {return a+b;});
+    dataStats.mean = sum/allValues.length;
+};
 
 //PopupContent constructor function
 function PopupContent(properties, attribute) {
@@ -216,7 +240,37 @@ function updatePropSymbols(attribute) {
                 //create the control container with a particular class name
                 var container = L.DomUtil.create('div', 'legend-control-container');
         
-                //PUT YOUR SCRIPT TO CREATE THE TEMPORAL LEGEND HERE
+                            //create svg
+            var svg = '<svg id = "attribute-legend" width="130px" height="130px">'; 
+
+            //add attribute legend svg to container
+            container.innerHTML += svg;
+
+            //array of circle names to base loop on
+            var circles = ["max", "mean", "min"];
+
+            //loop to add each circle to svg string
+            for (var i = 0; i<circles.length; i++) {
+                //assign r and cy attributes
+                var radius = calcPropRadius(attributes)[circles[i]];
+                var cy = 50 - radius;
+
+                //circle string
+                svg += '<circle class = "legend-circle" id ="' + circles[i] + '"r="' + radius + '"cy="' + cy + '"fill="#756bb1" fill-opacity="o.8" stroke="#252525" cs="65"/>';
+
+                //evenly space out labels
+                var textY = i * 20 + 20;
+
+                //text
+                svg += '<text id="' + circles[i] + '-text" x="95" y="' + textY + '">' + Math.round(attributes[circles[i]]*100)/100 + " percent" + '</text>';
+
+            };
+
+            //close svg 
+            svg += "</svg>";
+
+            //add attribute legend svg to container
+            container.insertAdjacentHTML('beforeend', svg);
                 
 
                 return container;
@@ -226,7 +280,7 @@ function updatePropSymbols(attribute) {
         map.addControl(new LegendControl());
     };
      
-}
+};
 
 
 //a consolidated popup-content-creation function 
@@ -282,7 +336,7 @@ function getData(map) {
             createPropSymbols(json, map, attributes); //pass the map here and pass the attributes to createPropSymbols
             createSequenceControls(attributes);  //pass attributes to createSequenceControls
         });
-}
+};
 
 
 //add event listener for DOMContentLoaded to create the map
