@@ -26,7 +26,7 @@ function createMap() {
 
 };
 
-/*
+
 //PopupContent constructor function
 function PopupContent(properties, attribute) {
     this.properties = properties;
@@ -35,9 +35,7 @@ function PopupContent(properties, attribute) {
     this.commute = this.properties[attribute];
     this.formatted = "<p><b>state:</b> " + this.properties.state + "</p><p><b>Commmute in " + this.year + ": </b>" + this.commute + " minutes</p>"; 
 };
-*/
 
-/*
 //function to calculate the minimum value in the dataset
 function calculateMinValue(data) {
     //create empty array to store all data values
@@ -56,7 +54,7 @@ function calculateMinValue(data) {
     var minValue = Math.min(...allValues)
 
     return minValue;
-} */
+}
 
 
 
@@ -148,6 +146,11 @@ function createPropSymbols(json, map, attributes) {
         },
     }).addTo(map);
 }
+
+
+
+
+
     
 
 //a consolidated popup-content-creation function 
@@ -365,6 +368,8 @@ function createLegend(attributes) {
 
             container.innerHTML = '<p class="temporalLegend">Commute Time in <span class="year">2013</span></p>';
 
+
+    
         //step 1 start attribute legend svg string
         var svg = '<svg id = "attribute-legend" width="160px" height="60px">'; 
 
@@ -432,7 +437,7 @@ function getData(map) {
             var attributes = processData(json);
             
             //calculate minimum data value
-            //minValue = calculateMinValue(json); 
+            minValue = calculateMinValue(json); 
             //call function to create proportional symbols
             createPropSymbols(json, map, attributes); //pass the map here and pass the attributes to createPropSymbols
             createSequenceControls(attributes);  //pass attributes to createSequenceControls
