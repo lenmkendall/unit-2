@@ -26,12 +26,46 @@ function createMap() {
 
 };
 
+/*
+//PopupContent constructor function
+function PopupContent(properties, attribute) {
+    this.properties = properties;
+    this.attribute = attribute;
+    this.year = attribute.split("commute")[1];
+    this.commute = this.properties[attribute];
+    this.formatted = "<p><b>state:</b> " + this.properties.state + "</p><p><b>Commmute in " + this.year + ": </b>" + this.commute + " minutes</p>"; 
+};
+*/
+
+/*
+//function to calculate the minimum value in the dataset
+function calculateMinValue(data) {
+    //create empty array to store all data values
+    var allValues = [];
+    //loop through each State
+    for(var state of data.features){
+        //loop through each year
+        for(var year = 2013; year <= 2019; year+=1){
+            //get commute time for current year
+            var value = state.properties["commute"+ String(year)];
+            //add value to array
+            allValues.push(value);
+        }
+    }
+    //get minimum value of our array
+    var minValue = Math.min(...allValues)
+
+    return minValue;
+} */
+
+
+
 //function to calc min, max, mean values
-function calcStats(data) {
+function calcStats(json) {
     //create empty array to store all datavalues
     var allValues = [];
 
-    //loop through each city
+    //loop through each state
     for (var state of data.features) {
         //loop through each year
         for(var year = 2013; year <= 2019; year +=1) {
@@ -45,37 +79,10 @@ function calcStats(data) {
     dataStats.min = Math.min(...allValues);
     dataStats.max = Math.max(...allValues);
     //calculate mean value
-    var sum = allValues.reduce(function(a, b) {return a+b;});
+    var sum = allValues.reduce(function(a, b) {
+        return a + b;
+    });
     dataStats.mean = sum/allValues.length;
-};
-
-//PopupContent constructor function
-function PopupContent(properties, attribute) {
-    this.properties = properties;
-    this.attribute = attribute;
-    this.year = attribute.split("commute")[1];
-    this.commute = this.properties[attribute];
-    this.formatted = "<p><b>state:</b> " + this.properties.state + "</p><p><b>Commmute in " + this.year + ": </b>" + this.commute + " minutes</p>"; 
-};
-
-//function to calculate the minimum value in the dataset
-function calculateMinValue(json) {
-    //create empty array to store all data values
-    var allValues = [];
-    //loop through each State
-    for(var state of json.features){
-        //loop through each year
-        for(var year = 2013; year <= 2019; year+=1){
-            //get commute time for current year
-            var value = state.properties["commute"+ String(year)];
-            //add value to array
-            allValues.push(value);
-        }
-    }
-    //get minimum value of our array
-    var minValue = Math.min(...allValues)
-
-    return minValue;
 }
 
 //calculate the radius of each proportional sympbol
@@ -114,13 +121,19 @@ function pointToLayer(feature, latlng, attributes) {
     var layer = L.circleMarker(latlng, options);
 
     //build popup content string
-    var popupContent = new PopupContent(feature.properties, attribute);
+    var popupContent = "<p><b>State:</b> " + feature.properties.State + "</p>";//w PopupContent(feature.properties, attribute);
     
-    //bind the popup to the circle marker
-    layer.bindPopup(popupContent.formatted, {  offset: new L.Point(0,-options.radius)    });
+    //add formatted attribute to popup content string
+    var year = attribute.split("commute")[1];
+    "<p><b>Commute time in " +
+    year +
+    ":</b> " +
+    feature.properties[attribute] +
+    " minutes</p>";
 
     //bind the popup to the circle marker
-    layer.bindPopup(popupContent);
+    layer.bindPopup(popupContent.formatted, {  offset: new L.Point(0, -options.radius),
+        });
 
     //Return the circle marker to the L.geoJson pointToLayer option
     return layer; 
@@ -132,9 +145,131 @@ function createPropSymbols(json, map, attributes) {
     L.geoJson(json, {
         pointToLayer: function (feature, latlng) {
             return pointToLayer(feature, latlng, attributes);
-        }
+        },
     }).addTo(map);
+}
+    
+
+//a consolidated popup-content-creation function 
+function createPopupContent(properties, attribute) {
+    //add state to popup content string
+    var popupContent = "<p><b>State:</b> " + properties.state + "</p>";
+
+    //add formatted attribute to panel content string
+    var year = attribute.split("commute")[1];
+    popupContent += "<p><b>Average commute in " + year + ": </b>" + properties[attribute] + " minutes</p>";
+
+    return popupContent;
 };
+
+function getCircleValues(attribute) {
+    //start with min at highest possible and max at lowest possible number
+    var min = Infinity,
+        max = -Infinity;
+
+        map.eachLayer(function (layer) {
+            //get the attribute value
+            if (layer.feature) {
+                var attributeValue = Number(layer.feature.properties[attribute]);
+
+                //test for min
+                if (attributeValue < min) {
+                    min = attributeValue;
+                }
+
+                //test for max
+                if (attributeValue > max) {
+                    max = attributeValue;
+                }
+            }
+        });
+
+        //set mean
+        var mean = (max + min) / 2;
+
+        //return values as an object
+        return {
+            max: max,
+            mean: mean,
+            min: min,
+        };
+}
+
+function updateLegend(attribute) {
+    //create content for legend
+    var year = attribute.split("commute")[1];
+    //replace legend content
+    document.querySelector("span.year").innerHTML = year;
+
+    //get the max, mean, and min values as an object
+    var circleValues = getCircleValues(attribute);
+
+    for (var key in circleValues) {
+        //get the radius
+        var radius = calcPropRadius(circleValues[key]);
+
+        document.querySelector("#" + key).setAttribute("cy", 59 - radius);
+        document.querySelector("#" + key).setAttribute("r", radius)
+
+        document.querySelector("#" + key + "-text").textContent = Math.round(circleValues[key] * 100) / 100 + " minutes";
+  
+    }
+}
+
+//resize proportional symbols according to new attribute values
+function updatePropSymbols(attribute) {
+    map.eachLayer(function(layer) {
+        if (layer.feature && layer.feature.properties[attribute]) {
+            //access feature properties
+            var props = layer.feature.properties;
+
+            //update each feature's radius based on the new attribute values
+            var radius = calcPropRadius(props[attribute]);
+            layer.setRadius(radius);
+
+            //update popup content
+            var popupContent = "<p><b>State:</b> " + props.State + "</p>"; //createPopupContent(props, attribute);
+            
+            //add formatted attribute to panel content string
+            var year = attribute.split("commute")[1];
+            popupContent +=
+                "<p><b>Commute Time in " +
+                year +
+                ":</b> " +
+                props[attribute] +
+                " minutes</p>";
+
+            //update popup with new content
+            popup = layer.getPopup();
+            popup.setContent(popupContent).update();
+        }
+    
+    });
+
+    updateLegend(attribute);
+}
+
+//build an attributes array from the data
+function processData(json) {
+    //empty array to hold attributes
+    var attributes = [];
+
+    //properties of the first feature in the dataset
+    var properties = json.features[0].properties;
+
+    //push each attribute name into attributes array
+    for (var attribute in properties) {
+        //only take attributes with commute time values
+        if (attribute.indexOf("commute") > -1) {
+            attributes.push(attribute);
+        }
+    }
+
+    //check result
+    //console.log(attributes);
+
+    return attributes;
+}
 
 //create new sequence controls
 function createSequenceControls(attributes) { //changed to accept the 'attributes' array as a parameter
@@ -173,149 +308,115 @@ function createSequenceControls(attributes) { //changed to accept the 'attribute
     
 
     //pass new attribute to update symbols initially
-    updatePropSymbols(attributes[0]); //start with the first attribute
+    //updatePropSymbols(attributes[0]); //start with the first attribute
 
     //set slider attributes dynamically based on number of attributes
     document.querySelector(".range-slider").max = attributes.length - 1;
     document.querySelector(".range-slider").min = 0;
     document.querySelector(".range-slider").value = 0;
-    document.querySelector(".range-slider").step = 1;  
+    document.querySelector(".range-slider").step = 1; 
+    
+    var steps = document.querySelectorAll('.step');
 
-    //click listener for buttons
-    document.querySelectorAll('.step').forEach(function(step) {
+    steps.forEach(function(step) {
         step.addEventListener("click", function() {
-            var index = document.querySelector('.range-slider').value;   
-            
-            // increment or decrement depending on button clicked
+            var index = document.querySelector('.range-slider').value;
+            //step 6 increment or decrement depending on buton clicked
+
             if (step.id == 'forward') {
-                index++;
-                //if past the last attribute, wrap around to first attribute
-                index = index > attributes.length - 1 ? 0 : index;
+                index++; 
+                //step 7: if past the last attribute, wrap around to first attribute
+                index = index > attributes.length -1 ? 0 : index;
             } else if (step.id == 'reverse') {
                 index--;
-                //if past the first attribute wrap around to the last attribute
-                index = index < 0 ? attributes.length - 1 : index;
-            }
-
-            //update slider
-            document.querySelector('.range-slider').value = index;
-
-            //pass new attribute to update symbols
-            updatePropSymbols(attributes[index]);
-        });
-
-    });
-
-}
-
-//resize proportional symbols according to new attribute values
-function updatePropSymbols(attribute) {
-    map.eachLayer(function(layer) {
-        if (layer.feature && layer.feature.properties[attribute]) {
-            
-            var props = layer.feature.properties;
-
-            //update each feature's radius based on the new attribute values
-            var radius = calcPropRadius(props[attribute]);
-            layer.setRadius(radius);
-
-            //update popup content
-            var popupContent = createPopupContent(props, attribute);
-            //update popup with new content
-            popup = layer.getPopup();
-            popup.setContent(popupContent).update();
-
-            layer.bindPopup(popupContent).openPopup();
-        }
-    
-    });
-
-    function createLegend(attributes) {
-        var LegendControl = L.Control.extend( {
-            options: {
-                position: 'bottomright'
-            },
-    
-            onAdd: function () {
-                //create the control container with a particular class name
-                var container = L.DomUtil.create('div', 'legend-control-container');
-        
-                            //create svg
-            var svg = '<svg id = "attribute-legend" width="130px" height="130px">'; 
-
-            //add attribute legend svg to container
-            container.innerHTML += svg;
-
-            //array of circle names to base loop on
-            var circles = ["max", "mean", "min"];
-
-            //loop to add each circle to svg string
-            for (var i = 0; i<circles.length; i++) {
-                //assign r and cy attributes
-                var radius = calcPropRadius(attributes)[circles[i]];
-                var cy = 50 - radius;
-
-                //circle string
-                svg += '<circle class = "legend-circle" id ="' + circles[i] + '"r="' + radius + '"cy="' + cy + '"fill="#756bb1" fill-opacity="o.8" stroke="#252525" cs="65"/>';
-
-                //evenly space out labels
-                var textY = i * 20 + 20;
-
-                //text
-                svg += '<text id="' + circles[i] + '-text" x="95" y="' + textY + '">' + Math.round(attributes[circles[i]]*100)/100 + " percent" + '</text>';
-
+                //step 7: if past the last attribute, wrap around to the last attribute
+                index = index < 0 ? attributes.length -1 : index;
             };
 
-            //close svg 
-            svg += "</svg>";
+            //step 8: update slider
+            document.querySelector('.range-slider').value = index;
 
-            //add attribute legend svg to container
-            container.insertAdjacentHTML('beforeend', svg);
-                
+            //step 9: pass nw attribute to update symbols
+            updatePropSymbols(attributes[index]); 
+        })
+    })
 
-                return container;
-            }
-        });
-    
-        map.addControl(new LegendControl());
-    };
-     
+    //step 5: input listener for slider
+    document.querySelector('.range-slider').addEventListener('input', function(){
+        //step 6: get the new index value
+        var index = this.value;
+
+        //step 9 pass new attribute to update symbols
+        updatePropSymbols(attributes[index]);
+    });
 };
 
 
-//a consolidated popup-content-creation function 
-function createPopupContent(properties, attribute) {
-    //add state to popup content string
-    var popupContent = "<p><b>State:</b> " + properties.state + "</p>";
+//create legend
+function createLegend(attributes) {
+    var LegendControl = L.Control.extend( {
+        options: {
+            position: 'bottomright'
+        },
 
-    //add formatted attribute to panel content string
-    var year = attribute.split("commute")[1];
-    popupContent += "<p><b>Average commute in " + year + ": </b>" + properties[attribute] + " minutes</p>";
+        onAdd: function () {
+            //create the control container with a particular class name
+            var container = L.DomUtil.create('div', 'legend-control-container');
 
-    return popupContent;
-};
+            container.innerHTML = '<p class="temporalLegend">Commute Time in <span class="year">2013</span></p>';
 
+        //step 1 start attribute legend svg string
+        var svg = '<svg id = "attribute-legend" width="160px" height="60px">'; 
 
-//build an attributes array from the data
-function processData(json) {
-    //empty array to hold attributes
-    var attributes = [];
+        //array of circle names to base loop on
+        var circles = ["max", "mean", "min"];
 
-    //properties of the first feature in the dataset
-    var properties = json.features[0].properties;
+        //loop to add each circle to svg string
+        for (var i = 0; i<circles.length; i++) {
+            //assign r and cy attributes
+            var radius = calcPropRadius(dataStats)[circles[i]];
+            console.log(radius);
+            var cy = 59 - radius;
+            console.log(cy);
 
-    //push each attribute name into attributes array
-    for (var attribute in properties) {
-        //only take attributes with population values
-        if (attribute.indexOf("commute") > -1) {
-            attributes.push(attribute);
+            //circle string
+            svg += 
+                '<circle class = "legend-circle" id ="' + 
+                circles[i] + 
+                '"r="' + 
+                radius + 
+                '"cy="' + 
+                cy +
+                '"fill="#F47821" fill-opacity="o.8" stroke="#000000" cx="30"/>';
+
+            //evenly space out labels
+            var textY = i * 20 + 20;
+
+            //text string
+            svg += 
+            '<text id="' +
+            circles[i] + 
+            '-text" x="65" y="' + 
+            textY + 
+            '">' + 
+            Math.round(dataStats[circles[i]] * 100) / 100 + 
+            " minutes" + 
+            "</text>";
+
         }
-    }
 
-    //check result
-    //console.log(attributes);
+        //close svg 
+        svg += "</svg>";
 
-    return attributes;
+        //add attribute legend svg to container
+        container.insertAdjacentHTML('beforeend', svg);
+            
+
+            return container;
+        },
+    });
+
+    map.addControl(new LegendControl());
 }
 
 
@@ -331,11 +432,12 @@ function getData(map) {
             var attributes = processData(json);
             
             //calculate minimum data value
-            minValue = calculateMinValue(json);
+            //minValue = calculateMinValue(json); 
             //call function to create proportional symbols
             createPropSymbols(json, map, attributes); //pass the map here and pass the attributes to createPropSymbols
             createSequenceControls(attributes);  //pass attributes to createSequenceControls
-        });
+            createLegend(attributes);
+        })
 };
 
 
