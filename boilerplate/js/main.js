@@ -368,18 +368,18 @@ function createLegend(attributes) {
             container.innerHTML = '<p class="temporalLegend">Commute Time in <span class="year">2013</span></p>';
 
         //step 1 start attribute legend svg string
-        var svg = '<svg id = "attribute-legend" width="160px" height="60px">'; 
+        var svg = '<svg id="attribute-legend" width="160px" height="60px">'; 
 
         //array of circle names to base loop on
         var circles = ["max", "mean", "min"];
 
         //loop to add each circle to svg string
-        for (var i = 0; i<circles.length; i++) {
+        for (var i = 0; i < circles.length; i++) {
             //assign r and cy attributes
-            var radius = calcPropRadius(dataStats)[circles[i]];
-            //console.log(radius);
+            var radius = calcPropRadius(dataStats[circles[i]]);
+            console.log(radius);
             var cy = 59 - radius;
-            //console.log(cy);
+            console.log(cy);
 
             //circle string
             svg += 
