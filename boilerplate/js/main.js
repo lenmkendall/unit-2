@@ -64,7 +64,7 @@ function calcStats(json) {
     var allValues = [];
 
     //loop through each state
-    for (var state of data.features) {
+    for (var state of json.features) {
         //loop through each year
         for(var year = 2013; year <= 2019; year +=1) {
             //get commute time for current year
@@ -119,7 +119,11 @@ function pointToLayer(feature, latlng, attributes) {
     var layer = L.circleMarker(latlng, options);
 
     //build popup content string
-    var popupContent = "<p><b>State:</b> " + feature.properties.state + "</p>";//w PopupContent(feature.properties, attribute);
+    var popupContent = "<p><b>State:</b> " + feature.properties.state + "</p>" +  "<p><b>Commute time in " +
+    year +
+    ":</b> " +
+    feature.properties[attribute] +
+    " minutes</p>";;
     
     //add formatted attribute to popup content string
     var year = attribute.split("commute")[1];
@@ -130,7 +134,8 @@ function pointToLayer(feature, latlng, attributes) {
     " minutes</p>";
 
     //bind the popup to the circle marker
-    layer.bindPopup(popupContent.formatted, {  offset: new L.Point(0, -options.radius),
+    layer.bindPopup(popupContent, {  
+        offset: new L.Point(0, -options.radius),
         });
 
     //Return the circle marker to the L.geoJson pointToLayer option
@@ -145,13 +150,7 @@ function createPropSymbols(json, map, attributes) {
             return pointToLayer(feature, latlng, attributes);
         },
     }).addTo(map);
-}
-
-
-
-
-
-    
+} 
 
 //a consolidated popup-content-creation function 
 function createPopupContent(properties, attribute) {
@@ -368,8 +367,6 @@ function createLegend(attributes) {
 
             container.innerHTML = '<p class="temporalLegend">Commute Time in <span class="year">2013</span></p>';
 
-
-    
         //step 1 start attribute legend svg string
         var svg = '<svg id = "attribute-legend" width="160px" height="60px">'; 
 
@@ -380,9 +377,9 @@ function createLegend(attributes) {
         for (var i = 0; i<circles.length; i++) {
             //assign r and cy attributes
             var radius = calcPropRadius(dataStats)[circles[i]];
-            console.log(radius);
+            //console.log(radius);
             var cy = 59 - radius;
-            console.log(cy);
+            //console.log(cy);
 
             //circle string
             svg += 
@@ -404,9 +401,9 @@ function createLegend(attributes) {
             '-text" x="65" y="' + 
             textY + 
             '">' + 
-            Math.round(dataStats[circles[i]] * 100) / 100 + 
+            Math.round(dataStats[circles[i]] + 
             " minutes" + 
-            "</text>";
+            "</text>");
 
         }
 
