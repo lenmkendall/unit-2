@@ -5,6 +5,12 @@
     display: inline-block;
 }
 
+.leaflet-popup-content p {
+    margin: .1em 0;
+}
+
+
+
 #panel {
     width: 16%;
     padding: 20px;
@@ -24,6 +30,7 @@
 
 .step img {
     width: 100%;
+    height: auto;
 }
 
 #forward {
@@ -59,10 +66,15 @@
 
 .legend-control-container {
     width: 200px;
-    height: 30px;
+    /*height: 30px;*/
+    font-weight: bold;
     background-color: rgba(255,255,255,0.8);
     padding: 10px;
     line-height: 45px;
     text-align: center;
     border: solid gray 1px;
+}
+
+.legend-control-container p{
+    margin: 0;
 }

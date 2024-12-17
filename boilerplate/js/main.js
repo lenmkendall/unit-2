@@ -183,7 +183,7 @@ function getCircleValues(attribute) {
                 if (attributeValue > max) {
                     max = attributeValue;
                 }
-            }
+            } 
         });
 
         //set mean
@@ -214,7 +214,7 @@ function updateLegend(attribute) {
         document.querySelector("#" + key).setAttribute("r", radius)
 
         document.querySelector("#" + key + "-text").textContent = Math.round(circleValues[key] * 100) / 100 + " minutes";
-  
+        console.log(radius)
     }
 }
 
