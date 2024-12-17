@@ -86,7 +86,7 @@ function calcStats(json) {
 //calculate the radius of each proportional sympbol
 function calcPropRadius(attValue) {
     //constant factor adjusts symbol sizes evenly
-    var minRadius = 7; 
+    var minRadius = 17; 
     //Flannery Apperance Compensation formula
     var radius = 1.0083 * Math.pow(attValue/minRadius,0.5715) * minRadius
 
