@@ -427,7 +427,7 @@ function createLegend(attributes) {
 //import GeoJSON data
 function getData(map) {
     //load the data
-    fetch("data/CommuteTime.geojson")
+    fetch("data/CommuteTime2.json")
         .then(function(response) {
             return response.json();
         })
