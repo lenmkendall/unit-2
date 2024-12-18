@@ -90,7 +90,6 @@ function calcPropRadius(attValue) {
     var minRadius = 8; 
     //Flannery Apperance Compensation formula
     var radius = 1.0083 * Math.pow(attValue/minRadius,0.5715) * minRadius
-    console.log(radius)
     return radius;
     
 }
@@ -427,7 +426,7 @@ function createLegend(attributes) {
 //import GeoJSON data
 function getData(map) {
     //load the data
-    fetch("data/CommuteTime.geojson")
+    fetch("data/CommuteTime2.geojson")
         .then(function(response) {
             return response.json();
         })
