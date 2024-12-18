@@ -3,7 +3,7 @@
 //declare minValue in global scope
 
 var map;
-var minValue;
+//var minValue;
 var dataStats = {}; 
 
 //function to instantiate the leaflet map
@@ -62,7 +62,6 @@ function calculateMinValue(data) {
 function calcStats(json) {
     //create empty array to store all datavalues
     var allValues = [];
-
     //loop through each state
     for (var state of json.features) {
         //loop through each year
@@ -73,6 +72,7 @@ function calcStats(json) {
             allValues.push(value);
         }
     }
+
     //get min, max, and mean stats
     dataStats.min = Math.min(...allValues);
     dataStats.max = Math.max(...allValues);
