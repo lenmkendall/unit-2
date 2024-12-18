@@ -87,11 +87,12 @@ function calcStats(data) {
 //calculate the radius of each proportional sympbol
 function calcPropRadius(attValue) {
     //constant factor adjusts symbol sizes evenly
-    var minRadius = 17; 
+    var minRadius = 8; 
     //Flannery Apperance Compensation formula
     var radius = 1.0083 * Math.pow(attValue/minRadius,0.5715) * minRadius
-
+    console.log(radius)
     return radius;
+    
 }
 
 //function to convert markers to circle markers
@@ -99,7 +100,7 @@ function pointToLayer(feature, latlng, attributes) {
     //determine which attribute to visualize with proportional symbols
     var attribute = attributes[0];
     //check
-    console.log(attribute);
+    //console.log(attribute);
 
     //create marker options
     var options = {
@@ -112,7 +113,7 @@ function pointToLayer(feature, latlng, attributes) {
 
     //for each feature, determine its value for the selected attribute
     var attValue = Number(feature.properties[attribute]); 
-
+  
     //give each feature's circle marker radius based on its attribute value
     options.radius = calcPropRadius(attValue);
 
@@ -378,9 +379,9 @@ function createLegend(attributes) {
         for (var i = 0; i < circles.length; i++) {
             //assign r and cy attributes
             var radius = calcPropRadius(dataStats[circles[i]]);
-            console.log(radius);
+            //console.log(radius);
             var cy = 59 - radius;
-            console.log(cy);
+            //console.log(cy);
 
             //circle string
             svg += 
