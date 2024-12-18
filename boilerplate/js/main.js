@@ -375,10 +375,11 @@ function createLegend(attributes) {
         //loop to add each circle to svg string
         for (var i = 0; i < circles.length; i++) {
             //assign r and cy attributes
+            
             var radius = calcPropRadius(dataStats[circles[i]]);
-            //console.log(radius);
+            
             var cy = 59 - radius;
-            //console.log(cy);
+         
 
             //circle string
             svg += 
