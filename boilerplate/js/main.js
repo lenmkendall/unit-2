@@ -59,17 +59,18 @@ function calculateMinValue(data) {
 
 
 //function to calc min, max, mean values
-function calcStats(json) {
+function calcStats(data) {
     //create empty array to store all datavalues
     var allValues = [];
     //loop through each state
-    for (var state of json.features) {
+    for (var state of data.features) {
         //loop through each year
         for(var year = 2013; year <= 2019; year +=1) {
             //get commute time for current year
             var value = state.properties[String(year)];
             //add value to array
             allValues.push(value);
+        
         }
     }
 
