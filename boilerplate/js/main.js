@@ -59,18 +59,17 @@ function calculateMinValue(json) {
 
 
 //function to calc min, max, mean values
-function calcStats(data) {
+function calcStats(data) { //should this be data or json?
     //create empty array to store all datavalues
     var allValues = [];
     //loop through each state
-    for (var state of data.features) {
+    for (var state of data.features) { //should this be data or json?
         //loop through each year
         for(var year = 2013; year <= 2019; year +=1) {
             //get commute time for current year
             var value = state.properties[String(year)];
             //add value to array
             allValues.push(value);
-        
         }
     }
 
@@ -82,6 +81,7 @@ function calcStats(data) {
         return a + b;
     });
     dataStats.mean = sum/allValues.length;
+    console.log(dataStats.min)
 }
 
 //calculate the radius of each proportional sympbol
@@ -90,8 +90,7 @@ function calcPropRadius(attValue) {
     var minRadius = 8; 
     //Flannery Apperance Compensation formula
     var radius = 1.0083 * Math.pow(attValue/minRadius,0.5715) * minRadius
-    return radius;
-    
+    return radius; 
 }
 
 //function to convert markers to circle markers
