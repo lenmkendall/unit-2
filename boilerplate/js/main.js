@@ -25,8 +25,7 @@ function createMap() {
     getData(map);
 
 };
-
-
+/*
 //PopupContent constructor function
 function PopupContent(properties, attribute) {
     this.properties = properties;
@@ -35,17 +34,18 @@ function PopupContent(properties, attribute) {
     this.commute = this.properties[attribute];
     this.formatted = "<p><b>state:</b> " + this.properties.state + "</p><p><b>Commmute in " + this.year + ": </b>" + this.commute + " minutes</p>"; 
 };
-
+*/
+/*
 //function to calculate the minimum value in the dataset
-function calculateMinValue(data) {
+function calculateMinValue(json) {
     //create empty array to store all data values
     var allValues = [];
     //loop through each State
-    for(var state of data.features){
+    for(var state of json.features){
         //loop through each year
         for(var year = 2013; year <= 2019; year+=1){
             //get commute time for current year
-            var value = state.properties["commute"+ String(year)];
+            var value = state.properties[String(year)];
             //add value to array
             allValues.push(value);
         }
@@ -55,7 +55,7 @@ function calculateMinValue(data) {
 
     return minValue;
 }
-
+*/
 
 
 //function to calc min, max, mean values
@@ -112,7 +112,7 @@ function pointToLayer(feature, latlng, attributes) {
 
     //for each feature, determine its value for the selected attribute
     var attValue = Number(feature.properties[attribute]); 
-  
+
     //give each feature's circle marker radius based on its attribute value
     options.radius = calcPropRadius(attValue);
 
@@ -120,14 +120,12 @@ function pointToLayer(feature, latlng, attributes) {
     var layer = L.circleMarker(latlng, options);
 
     //build popup content string
-    var popupContent = "<p><b>State:</b> " + feature.properties.state + "</p>" +  "<p><b>Commute time in " +
-    year +
-    ":</b> " +
-    feature.properties[attribute] +
-    " minutes</p>";;
+    var popupContent = "<p><b>State:</b> " + feature.properties.state + "</p>" 
     
     //add formatted attribute to popup content string
     var year = attribute.split("commute")[1];
+    
+    popupContent +=
     "<p><b>Commute time in " +
     year +
     ":</b> " +
@@ -152,7 +150,7 @@ function createPropSymbols(json, map, attributes) {
         },
     }).addTo(map);
 } 
-
+/*
 //a consolidated popup-content-creation function 
 function createPopupContent(properties, attribute) {
     //add state to popup content string
@@ -164,7 +162,7 @@ function createPopupContent(properties, attribute) {
 
     return popupContent;
 };
-
+*/
 function getCircleValues(attribute) {
     //start with min at highest possible and max at lowest possible number
     var min = Infinity,
@@ -214,8 +212,8 @@ function updateLegend(attribute) {
         document.querySelector("#" + key).setAttribute("cy", 59 - radius);
         document.querySelector("#" + key).setAttribute("r", radius)
 
-        document.querySelector("#" + key + "-text").textContent = Math.round(circleValues[key] * 100) / 100 + " minutes";
-        console.log(radius)
+        document.querySelector("#" + key + "-text").textContent = Math.round(circleValues[key] * 1)  + " minutes";
+    
     }
 }
 
@@ -233,7 +231,7 @@ function updatePropSymbols(attribute) {
             //update popup content
             var popupContent = "<p><b>State:</b> " + props.state + "</p>"; //createPopupContent(props, attribute);
             
-            //add formatted attribute to panel content string
+            ///add formatted attribute to panel content string
             var year = attribute.split("commute")[1];
             popupContent +=
                 "<p><b>Commute Time in " +
@@ -426,7 +424,7 @@ function createLegend(attributes) {
 //import GeoJSON data
 function getData(map) {
     //load the data
-    fetch("data/CommuteTime2.geojson")
+    fetch("data/CommuteTime.geojson")
         .then(function(response) {
             return response.json();
         })
@@ -435,7 +433,7 @@ function getData(map) {
             var attributes = processData(json);
             
             //calculate minimum data value
-            minValue = calculateMinValue(json); 
+            //minValue = calculateMinValue(json); 
             //call function to create proportional symbols
             createPropSymbols(json, map, attributes); //pass the map here and pass the attributes to createPropSymbols
             createSequenceControls(attributes);  //pass attributes to createSequenceControls
