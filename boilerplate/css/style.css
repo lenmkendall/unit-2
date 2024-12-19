@@ -73,8 +73,23 @@
     line-height: 45px;
     text-align: center;
     border: solid gray 1px;
+    background: rgba(255,255,255,0.8);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
 }
 
 .legend-control-container p{
     margin: 0;
 }
+
+#attribute-legend {
+    width: 160px;
+    height: 120px;
+}
+
+.temporalLegend {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
